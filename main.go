@@ -25,10 +25,6 @@ func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 }
 
 func (cfg *apiConfig) handlerMetricsCount(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	body := fmt.Sprintf("Hits: %d", cfg.fileserverHits.Load())
@@ -36,10 +32,6 @@ func (cfg *apiConfig) handlerMetricsCount(w http.ResponseWriter, r *http.Request
 }
 
 func (cfg *apiConfig) handlerMetricsReset(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	cfg.fileserverHits.Store(0)
 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
@@ -47,10 +39,6 @@ func (cfg *apiConfig) handlerMetricsReset(w http.ResponseWriter, r *http.Request
 }
 
 func handlerServerReady(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
@@ -64,9 +52,9 @@ func main() {
 	// Endpoint handlers
 	fileServer := http.FileServer(http.Dir(rootDir))
 	mux.Handle("/app/", http.StripPrefix("/app", cfg.middlewareMetricsInc(fileServer))) // Requests should start with /app/ to avoid
-	mux.HandleFunc("/healthz", handlerServerReady)                                      // conflicts with other endpoints
-	mux.HandleFunc("/metrics", cfg.handlerMetricsCount)
-	mux.HandleFunc("/reset", cfg.handlerMetricsReset)
+	mux.HandleFunc("GET /api/healthz", handlerServerReady)                              // conflicts with other endpoints
+	mux.HandleFunc("GET /api/metrics", cfg.handlerMetricsCount)
+	mux.HandleFunc("POST /api/reset", cfg.handlerMetricsReset)
 
 	server := &http.Server{ // Server configurations
 		Addr:    ":" + port,
