@@ -14,9 +14,9 @@ func profanityFilter(s string) string {
 	}
 	profanities = append(profanities, transformed...)
 	for _, p := range profanities {
-		s = strings.ReplaceAll(s, p, "****")
+		sep := fmt.Sprintf(" %s ", p)
+		s = strings.Join(strings.Split(s, sep), " **** ")
 	}
-	fmt.Println(profanities)
 	return s
 }
 

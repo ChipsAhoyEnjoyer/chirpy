@@ -13,20 +13,24 @@ type testCase struct {
 func TestProfanityFilter(t *testing.T) {
 	tests := []testCase{
 		{
-			input:    "kerfuffle, sharbert, fornax",
-			expected: "****, ****, ****",
+			input:    " kerfuffle sharbert fornax ",
+			expected: " **** **** **** ",
 		},
 		{
-			input:    "What a Kerfuffle",
-			expected: "What a ****",
+			input:    "What a Kerfuffle !",
+			expected: "What a **** !",
 		},
 		{
-			input:    "KERFUFFLE",
-			expected: "****",
+			input:    " SHARBERT ",
+			expected: " **** ",
 		},
 		{
-			input:    "1KERFUFFLE",
-			expected: "1KERFUFFLE",
+			input:    " fornax ",
+			expected: " **** ",
+		},
+		{
+			input:    "KERFUFFLE, SharBert, fornax",
+			expected: "KERFUFFLE, SharBert, fornax",
 		},
 	}
 	for _, test := range tests {
