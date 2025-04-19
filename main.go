@@ -58,52 +58,35 @@ func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&params)
 	if err != nil {
 		log.Printf("Error decoding parameters: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		dat, err := json.Marshal(&struct {
-			Error string `json:"error"`
-		}{Error: "Something went wrong"})
-		if err != nil {
-			log.Printf("Error encoding response: %v", err)
-			return
-		}
-		w.Header().Add("Content-Type", "application/json")
-		w.Write(dat)
+		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
 		return
 	}
 
 	if len(params.Body) > 140 {
 		log.Println("Error with user request: Too many characters")
-		w.WriteHeader(http.StatusBadRequest)
-		dat, err := json.Marshal(&struct {
-			Error string `json:"error"`
-		}{Error: "Chirp is too long"})
-		if err != nil {
-			log.Printf("Error encoding response: %v", err)
-			return
-		}
-		w.Header().Add("Content-Type", "application/json")
-		w.Write(dat)
+		respondWithError(w, http.StatusBadRequest, "Request too long; Max 140 char request.")
 		return
 	}
-	fmt.Println(params.Body)
-	type respBody struct {
-		Valid bool   `json:"valid,omitempty"`
-		Error string `json:"error,omitempty"`
-	}
-	dat, err := json.Marshal(respBody{Valid: true})
-	if err != nil {
-		log.Printf("Error encoding response: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		dat, err = json.Marshal(&respBody{Error: "Something went wrong"})
-		if err != nil {
-			return
-		}
-		w.Header().Add("Content-Type", "application/json")
-		w.Write(dat)
-		return
-	}
+	payload := struct {
+		CleanedBody string `json:"cleaned_body,omitempty"`
+	}{CleanedBody: profanityFilter(params.Body)}
+	respondWithJSON(w, http.StatusOK, payload)
+}
+
+func respondWithError(w http.ResponseWriter, code int, msg string) {
 	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(code)
+	respBody := struct {
+		Err string `json:"error"`
+	}{Err: msg}
+	dat, _ := json.Marshal(respBody)
+	w.Write(dat)
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	w.WriteHeader(code)
+	w.Header().Add("Content-Type", "application/json")
+	dat, _ := json.Marshal(payload) // payload should be an encoded struct
 	w.Write(dat)
 }
 
