@@ -39,8 +39,8 @@ func main() {
 	fileServer := http.FileServer(http.Dir(rootDir))
 	mux.Handle("/app/", http.StripPrefix("/app", cfg.middlewareMetricsInc(fileServer))) // Requests should start with /app/ to avoid
 	mux.HandleFunc("GET /api/healthz", handlerServerReady)                              // conflicts with other endpoints
-	mux.HandleFunc("POST /api/validate_chirp", handlerValidateChirp)
 	mux.HandleFunc("POST /api/users", cfg.handlerCreateUser)
+	mux.HandleFunc("POST /api/chirps", handlerValidateChirp)
 	mux.HandleFunc("GET /admin/metrics", cfg.handlerMetricsCount)
 	mux.HandleFunc("POST /admin/reset", cfg.handlerMetricsReset)
 
