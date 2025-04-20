@@ -17,11 +17,17 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error decoding response")
 	}
-	resp, err := cfg.dbQueries.CreateUser(r.Context(), req.Email)
+	u, err := cfg.dbQueries.CreateUser(r.Context(), req.Email)
 	if err != nil {
 		log.Printf("Error adding email '%v' to database: %v\n", req.Email, err)
 		respondWithError(w, http.StatusInternalServerError, "Error registering user: "+err.Error())
 		return
 	}
-	respondWithJSON(w, http.StatusOK, resp)
+	resp := user{
+		ID:        u.ID,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
+		Email:     u.Email,
+	}
+	respondWithJSON(w, http.StatusCreated, resp)
 }
