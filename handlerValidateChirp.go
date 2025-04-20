@@ -8,15 +8,15 @@ import (
 
 func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	type parameters struct {
+
+	params := struct {
 		Body string `json:"body"`
-	}
-	params := parameters{}
+	}{}
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&params)
 	if err != nil {
 		log.Printf("Error decoding parameters: %s", err)
-		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
+		respondWithError(w, http.StatusInternalServerError, "Error decoding response")
 		return
 	}
 

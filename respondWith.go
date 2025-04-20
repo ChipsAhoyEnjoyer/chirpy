@@ -11,13 +11,21 @@ func respondWithError(w http.ResponseWriter, code int, msg string) {
 	respBody := struct {
 		Err string `json:"error"`
 	}{Err: msg}
-	dat, _ := json.Marshal(respBody)
+	dat, err := json.Marshal(respBody)
+	if err != nil {
+		http.Error(w, "Failed to encode error response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.Write(dat)
 }
 
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	w.WriteHeader(code)
+func respondWithJSON(w http.ResponseWriter, code int, payload any) {
 	w.Header().Add("Content-Type", "application/json")
-	dat, _ := json.Marshal(payload) // payload should be an encoded struct
+	w.WriteHeader(code)
+	dat, err := json.Marshal(payload) // payload should be a Go struct or any JSON-marshalable type
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to encode response: "+err.Error())
+		return
+	}
 	w.Write(dat)
 }
