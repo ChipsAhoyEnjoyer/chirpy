@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/ChipsAhoyEnjoyer/chirpy/pkg/titlecase"
 )
 
-func profanityFilter(s string) string {
+func ProfanityFilter(s string) string {
 	profanities := []string{"kerfuffle", "sharbert", "fornax"}
 	transformed := []string{}
 	for _, p := range profanities {

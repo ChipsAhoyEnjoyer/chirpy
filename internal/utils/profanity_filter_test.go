@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"fmt"
@@ -34,7 +34,7 @@ func TestProfanityFilter(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		out := profanityFilter(test.input)
+		out := ProfanityFilter(test.input)
 		if out != test.expected {
 			fmt.Println("Test failed:")
 			fmt.Printf("Expected:    %v\n", test.expected)

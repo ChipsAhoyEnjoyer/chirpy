@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 
 	"github.com/ChipsAhoyEnjoyer/chirpy/internal/database"
+	"github.com/ChipsAhoyEnjoyer/chirpy/internal/handler"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -27,9 +28,9 @@ func main() {
 	if err != nil {
 		log.Fatal("Error opening database connection")
 	}
-	cfg := apiConfig{
-		fileserverHits: atomic.Int32{},
-		dbQueries:      *database.New(db),
+	cfg := handler.ApiConfig{
+		FileserverHits: atomic.Int32{},
+		DbQueries:      *database.New(db),
 	}
 
 	// New router
@@ -37,12 +38,12 @@ func main() {
 
 	// Endpoint handlers
 	fileServer := http.FileServer(http.Dir(rootDir))
-	mux.Handle("/app/", http.StripPrefix("/app", cfg.middlewareMetricsInc(fileServer))) // Requests should start with /app/ to avoid
-	mux.HandleFunc("GET /api/healthz", handlerServerReady)                              // conflicts with other endpoints
-	mux.HandleFunc("POST /api/users", cfg.handlerCreateUser)
-	mux.HandleFunc("POST /api/chirps", cfg.handlerValidateChirp)
-	mux.HandleFunc("GET /admin/metrics", cfg.handlerMetricsCount)
-	mux.HandleFunc("POST /admin/reset", cfg.handlerMetricsReset)
+	mux.Handle("/app/", http.StripPrefix("/app", cfg.MiddlewareMetricsInc(fileServer))) // Requests should start with /app/ to avoid
+	mux.HandleFunc("GET /api/healthz", handler.HandlerServerReady)                      // conflicts with other endpoints
+	mux.HandleFunc("POST /api/users", cfg.HandlerCreateUser)
+	mux.HandleFunc("POST /api/chirps", cfg.HandlerValidateChirp)
+	mux.HandleFunc("GET /admin/metrics", cfg.HandlerMetricsCount)
+	mux.HandleFunc("POST /admin/reset", cfg.HandlerMetricsReset)
 
 	server := &http.Server{ // Server configurations
 		Addr:    ":" + port,

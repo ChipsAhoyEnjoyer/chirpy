@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"encoding/json"
@@ -6,10 +6,11 @@ import (
 	"net/http"
 
 	"github.com/ChipsAhoyEnjoyer/chirpy/internal/database"
+	"github.com/ChipsAhoyEnjoyer/chirpy/internal/utils"
 	"github.com/google/uuid"
 )
 
-func (cfg *apiConfig) handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
+func (cfg *ApiConfig) HandlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	req := struct {
@@ -20,18 +21,18 @@ func (cfg *apiConfig) handlerValidateChirp(w http.ResponseWriter, r *http.Reques
 	err := decoder.Decode(&req)
 	if err != nil {
 		log.Printf("Error decoding parameters: %s", err)
-		respondWithError(w, http.StatusInternalServerError, "Error decoding response")
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error decoding response")
 		return
 	}
 
 	if len(req.Body) > 140 {
 		log.Println("Error with user request: Too many characters")
-		respondWithError(w, http.StatusBadRequest, "Request too long; Max 140 char request.")
+		utils.RespondWithError(w, http.StatusBadRequest, "Request too long; Max 140 char request.")
 		return
 	}
 
-	cleanedChirp := profanityFilter(req.Body)
-	c, err := cfg.dbQueries.CreateChirp(
+	cleanedChirp := utils.ProfanityFilter(req.Body)
+	c, err := cfg.DbQueries.CreateChirp(
 		r.Context(),
 		database.CreateChirpParams{
 			Body:   cleanedChirp,
@@ -41,16 +42,16 @@ func (cfg *apiConfig) handlerValidateChirp(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		log.Printf("Error posting chirp by '%v' to database: %v", c.UserID, err)
 		log.Printf("chirp body: \n\n%v\n", c.Body)
-		respondWithError(w, http.StatusInternalServerError, "Error posting chirp: "+err.Error())
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error posting chirp: "+err.Error())
 		return
 	}
 
-	resp := chirp{
+	resp := Chirp{
 		ID:        c.ID,
 		CreatedAt: c.CreatedAt,
 		UpdatedAt: c.UpdatedAt,
 		Body:      c.Body,
 		UserID:    c.UserID,
 	}
-	respondWithJSON(w, http.StatusCreated, resp)
+	utils.RespondWithJSON(w, http.StatusCreated, resp)
 }
