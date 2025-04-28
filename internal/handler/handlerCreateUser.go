@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ChipsAhoyEnjoyer/chirpy/internal/auth"
 	"github.com/ChipsAhoyEnjoyer/chirpy/internal/database"
 	"github.com/ChipsAhoyEnjoyer/chirpy/internal/utils"
 )
@@ -21,11 +22,16 @@ func (cfg *ApiConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error decoding response: "+err.Error())
 		return
 	}
+	pw, err := auth.HashPassword(req.Password)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error hashing password: "+err.Error())
+		return
+	}
 	u, err := cfg.DbQueries.CreateUser(
 		r.Context(),
 		database.CreateUserParams{
 			Email:          req.Email,
-			HashedPassword: req.Password,
+			HashedPassword: pw,
 		},
 	)
 	if err != nil {
