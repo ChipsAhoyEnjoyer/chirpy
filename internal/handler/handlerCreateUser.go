@@ -11,7 +11,8 @@ import (
 func (cfg *ApiConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	req := struct {
-		Email string `json:"email"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}{}
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&req)
