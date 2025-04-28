@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ChipsAhoyEnjoyer/chirpy/internal/database"
 	"github.com/ChipsAhoyEnjoyer/chirpy/internal/utils"
 )
 
@@ -20,7 +21,13 @@ func (cfg *ApiConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error decoding response: "+err.Error())
 		return
 	}
-	u, err := cfg.DbQueries.CreateUser(r.Context(), req.Email)
+	u, err := cfg.DbQueries.CreateUser(
+		r.Context(),
+		database.CreateUserParams{
+			Email:          req.Email,
+			HashedPassword: req.Password,
+		},
+	)
 	if err != nil {
 		log.Printf("Error posting email '%v' to database: %v\n", req.Email, err)
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error registering user: "+err.Error())
