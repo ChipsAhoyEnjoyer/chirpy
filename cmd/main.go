@@ -41,6 +41,7 @@ func main() {
 	mux.Handle("/app/", http.StripPrefix("/app", cfg.MiddlewareMetricsInc(fileServer))) // Requests should start with /app/ to avoid
 	mux.HandleFunc("GET /api/healthz", handler.HandlerServerReady)                      // conflicts with other endpoints
 	mux.HandleFunc("POST /api/users", cfg.HandlerCreateUser)
+	mux.HandleFunc("POST /api/login", cfg.HandlerLogin)
 	mux.HandleFunc("POST /api/chirps", cfg.HandlerValidateChirp)
 	mux.HandleFunc("GET /api/chirps", cfg.HandlerGetChirps)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", cfg.HandlerGetChirp)
