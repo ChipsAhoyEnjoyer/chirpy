@@ -1,8 +1,12 @@
 package auth
 
 import (
+	"math/rand"
+	"reflect"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -78,6 +82,69 @@ func TestCheckPasswordHash(t *testing.T) {
 			}
 			if err := CheckPasswordHash(hashPW, tt.args.password); (err != nil) != tt.wantErr {
 				t.Errorf("CheckPasswordHash() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestMakeJWT(t *testing.T) {
+	// seeding for random uuid gen
+	uuid.SetRand(rand.New(rand.NewSource(42)))
+
+	type args struct {
+		userID      uuid.UUID
+		tokenSecret string
+		expiresIn   time.Duration
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "generate token",
+			args: args{
+				userID:      uuid.New(),
+				tokenSecret: "secret",
+				expiresIn:   5 * time.Second,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tk, err := MakeJWT(tt.args.userID, tt.args.tokenSecret, tt.args.expiresIn)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("MakeJWT() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			t.Log(tk)
+		})
+	}
+}
+
+func TestValidateJWT(t *testing.T) {
+	type args struct {
+		tokenString string
+		tokenSecret string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uuid.UUID
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ValidateJWT(tt.args.tokenString, tt.args.tokenSecret)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ValidateJWT() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ValidateJWT() = %v, want %v", got, tt.want)
 			}
 		})
 	}
