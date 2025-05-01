@@ -24,8 +24,8 @@ func MakeJWT(userID uuid.UUID, tokenSecret string, expiresIn time.Duration) (str
 		jwt.RegisteredClaims{
 			Issuer:    "chirpy",
 			Subject:   userID.String(),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresIn)),
+			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(expiresIn)),
 		},
 	)
 	tkString, err := tk.SignedString([]byte(tokenSecret))
@@ -47,15 +47,22 @@ func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
 		},
 	)
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.Nil, err
+	}
+	issuer, err := tk.Claims.GetIssuer()
+	if err != nil {
+		return uuid.Nil, err
+	}
+	if issuer != string("chirpy") {
+		return uuid.Nil, fmt.Errorf("invalid issuer")
 	}
 	idStr, err := tk.Claims.GetSubject()
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.Nil, err
 	}
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.Nil, fmt.Errorf("invalid user id")
 	}
 	return id, nil
 }
