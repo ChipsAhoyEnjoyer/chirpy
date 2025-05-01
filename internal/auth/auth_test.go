@@ -126,61 +126,55 @@ func TestMakeJWT(t *testing.T) {
 func TestValidateJWT(t *testing.T) {
 	// seeding for random uuid gen
 	uuid.SetRand(rand.New(rand.NewSource(77)))
-	type args struct {
+	id := uuid.New()
+	idStr, err := MakeJWT(
+		id,
+		"secret",
+		time.Hour,
+	)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	tests := []struct {
+		name        string
 		tokenString string
 		tokenSecret string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    uuid.UUID
-		wantErr bool
+		want        uuid.UUID
+		wantErr     bool
 	}{
 		{
-			name:    "validate token",
-			wantErr: false,
-			want:    uuid.New(),
+			name:        "validate token",
+			wantErr:     false,
+			want:        id,
+			tokenString: idStr,
+			tokenSecret: "secret",
 		},
 		{
-			name:    "wrong token",
-			wantErr: true,
-			want:    uuid.New(),
+			name:        "wrong token",
+			wantErr:     true,
+			want:        uuid.Nil,
+			tokenString: "wrong.wrong.wrong",
+			tokenSecret: "secret",
+		},
+		{
+			name:        "wrong secret",
+			wantErr:     true,
+			want:        uuid.Nil,
+			tokenString: idStr,
+			tokenSecret: "wrong_secret",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			secret := "12345"
-			tk, err := MakeJWT(
-				tt.want,
-				secret,
-				5*time.Second,
-			)
-			if err != nil {
-				t.Errorf("error creating the JWT: %v", err)
-				return
-			}
-			tt.args.tokenString = tk
-
-			// For "wrong token" test case, use a different secret for validation
-			if tt.name == "wrong token" {
-				tt.args.tokenSecret = "different_secret"
-			} else {
-				tt.args.tokenSecret = secret
-			}
-			got, err := ValidateJWT(tt.args.tokenString, tt.args.tokenSecret)
+			got, err := ValidateJWT(tt.tokenString, tt.tokenSecret)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateJWT() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if tt.name == "wrong token" {
-				if reflect.DeepEqual(got, tt.want) {
-					t.Errorf("wrong token test: ValidateJWT() = %v == want %v", got, tt.want)
-					return
-				}
-			} else {
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("ValidateJWT() = %v, want %v", got, tt.want)
-				}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ValidateJWT() = %v, want %v", got, tt.want)
 			}
 		})
 	}
