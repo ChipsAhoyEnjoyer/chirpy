@@ -201,8 +201,14 @@ func TestGetBearerToken(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name:    "empty header 2",
+			headers: http.Header{},
+			want:    "",
+			wantErr: true,
+		},
+		{
 			name:    "wrong bearer",
-			headers: http.Header{"Authorization": []string{"Bearer wrong.token.string"}},
+			headers: http.Header{"Authorization": []string{"None wrong.token.string"}},
 			want:    "",
 			wantErr: true,
 		},
