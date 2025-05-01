@@ -11,19 +11,20 @@ import (
 type ApiConfig struct {
 	FileserverHits atomic.Int32
 	DbQueries      database.Queries
+	JWTSecret      string
 }
-
 type Chirp struct {
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Body      string    `json:"body"`
-	UserID    uuid.UUID `json:"user_id"`
+	ID        uuid.UUID `json:"id,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitzero"`
+	UpdatedAt time.Time `json:"updated_at,omitzero"`
+	Body      string    `json:"body,omitempty"`
+	UserID    uuid.UUID `json:"user_id,omitempty"`
 }
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Email     string    `json:"email"`
+	ID        uuid.UUID `json:"id,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitzero"`
+	UpdatedAt time.Time `json:"updated_at,omitzero"`
+	Email     string    `json:"email,omitempty"`
+	Token     string    `json:"token,omitempty"`
 }

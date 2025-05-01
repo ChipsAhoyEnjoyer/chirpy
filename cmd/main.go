@@ -31,6 +31,7 @@ func main() {
 	cfg := handler.ApiConfig{
 		FileserverHits: atomic.Int32{},
 		DbQueries:      *database.New(db),
+		JWTSecret:      os.Getenv("SIGNING_KEY"),
 	}
 
 	// New router
