@@ -89,7 +89,7 @@ func TestCheckPasswordHash(t *testing.T) {
 
 func TestMakeJWT(t *testing.T) {
 	// seeding for random uuid gen
-	uuid.SetRand(rand.New(rand.NewSource(42)))
+	uuid.SetRand(rand.New(rand.NewSource(77)))
 
 	type args struct {
 		userID      uuid.UUID
@@ -124,6 +124,8 @@ func TestMakeJWT(t *testing.T) {
 }
 
 func TestValidateJWT(t *testing.T) {
+	// seeding for random uuid gen
+	uuid.SetRand(rand.New(rand.NewSource(77)))
 	type args struct {
 		tokenString string
 		tokenSecret string
@@ -134,17 +136,51 @@ func TestValidateJWT(t *testing.T) {
 		want    uuid.UUID
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:    "validate token",
+			wantErr: false,
+			want:    uuid.New(),
+		},
+		{
+			name:    "wrong token",
+			wantErr: true,
+			want:    uuid.New(),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			secret := "12345"
+			tk, err := MakeJWT(
+				tt.want,
+				secret,
+				5*time.Second,
+			)
+			if err != nil {
+				t.Errorf("error creating the JWT: %v", err)
+				return
+			}
+			tt.args.tokenString = tk
+
+			// For "wrong token" test case, use a different secret for validation
+			if tt.name == "wrong token" {
+				tt.args.tokenSecret = "different_secret"
+			} else {
+				tt.args.tokenSecret = secret
+			}
 			got, err := ValidateJWT(tt.args.tokenString, tt.args.tokenSecret)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateJWT() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ValidateJWT() = %v, want %v", got, tt.want)
+			if tt.name == "wrong token" {
+				if reflect.DeepEqual(got, tt.want) {
+					t.Errorf("wrong token test: ValidateJWT() = %v == want %v", got, tt.want)
+					return
+				}
+			} else {
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("ValidateJWT() = %v, want %v", got, tt.want)
+				}
 			}
 		})
 	}
