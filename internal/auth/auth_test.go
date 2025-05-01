@@ -2,6 +2,7 @@ package auth
 
 import (
 	"math/rand"
+	"net/http"
 	"reflect"
 	"testing"
 	"time"
@@ -175,6 +176,46 @@ func TestValidateJWT(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ValidateJWT() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetBearerToken(t *testing.T) {
+	tests := []struct {
+		name    string
+		headers http.Header
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "Get Token",
+			headers: http.Header{"Authorization": []string{"Bearer random.token.string"}},
+			want:    "random.token.string",
+			wantErr: false,
+		},
+		{
+			name:    "empty header",
+			headers: http.Header{"Authorization": []string{""}},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name:    "wrong bearer",
+			headers: http.Header{"Authorization": []string{"Bearer wrong.token.string"}},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetBearerToken(tt.headers)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBearerToken() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetBearerToken() = %v, want %v", got, tt.want)
 			}
 		})
 	}
