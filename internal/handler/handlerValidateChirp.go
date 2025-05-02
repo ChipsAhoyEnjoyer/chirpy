@@ -5,17 +5,16 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ChipsAhoyEnjoyer/chirpy/internal/auth"
 	"github.com/ChipsAhoyEnjoyer/chirpy/internal/database"
 	"github.com/ChipsAhoyEnjoyer/chirpy/internal/utils"
-	"github.com/google/uuid"
 )
 
 func (cfg *ApiConfig) HandlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	req := struct {
-		Body   string    `json:"body"`
-		UserID uuid.UUID `json:"user_id"`
+		Body string `json:"body"`
 	}{}
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&req)
@@ -31,12 +30,23 @@ func (cfg *ApiConfig) HandlerValidateChirp(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	tk, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusUnauthorized, "401: Unauthorized")
+		return
+	}
+	userID, err := auth.ValidateJWT(tk, cfg.JWTSecret)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusUnauthorized, "401: Unauthorized")
+		return
+	}
+
 	cleanedChirp := utils.ProfanityFilter(req.Body)
 	c, err := cfg.DbQueries.CreateChirp(
 		r.Context(),
 		database.CreateChirpParams{
 			Body:   cleanedChirp,
-			UserID: req.UserID,
+			UserID: userID,
 		},
 	)
 	if err != nil {
