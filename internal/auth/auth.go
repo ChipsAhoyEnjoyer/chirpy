@@ -43,7 +43,7 @@ func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
 	tk, err := jwt.ParseWithClaims(
 		tokenString,
 		jwt.MapClaims{},
-		func(tk *jwt.Token) (interface{}, error) {
+		func(tk *jwt.Token) (any, error) {
 			if tk.Method != jwt.SigningMethodHS256 {
 				return nil, fmt.Errorf("error incorrect signing method given: %v", tk.Method.Alg())
 			}
@@ -80,6 +80,7 @@ func GetBearerToken(headers http.Header) (string, error) {
 }
 
 func MakeRefreshToken() (string, error) {
+	/* should never fail according to the rand.Read docs */
 	tk := make([]byte, 32)
 	rand.Read(tk)
 	return hex.EncodeToString(tk), nil

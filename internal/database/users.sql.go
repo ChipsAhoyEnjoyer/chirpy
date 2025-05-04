@@ -57,6 +57,44 @@ func (q *Queries) DeleteAllUsers(ctx context.Context) error {
 	return err
 }
 
+const updateUserCredentials = `-- name: UpdateUserCredentials :one
+UPDATE users
+SET email = $1, hashed_password = $2, updated_at = $3
+WHERE id = $4
+RETURNING id, created_at, updated_at, email
+`
+
+type UpdateUserCredentialsParams struct {
+	Email          string
+	HashedPassword string
+	UpdatedAt      time.Time
+	ID             uuid.UUID
+}
+
+type UpdateUserCredentialsRow struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Email     string
+}
+
+func (q *Queries) UpdateUserCredentials(ctx context.Context, arg UpdateUserCredentialsParams) (UpdateUserCredentialsRow, error) {
+	row := q.db.QueryRowContext(ctx, updateUserCredentials,
+		arg.Email,
+		arg.HashedPassword,
+		arg.UpdatedAt,
+		arg.ID,
+	)
+	var i UpdateUserCredentialsRow
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Email,
+	)
+	return i, err
+}
+
 const userLogin = `-- name: UserLogin :one
 SELECT id, created_at, updated_at, email, hashed_password FROM users
 WHERE  email = $1
