@@ -14,7 +14,7 @@ func (cfg *ApiConfig) HandlerGetChirp(w http.ResponseWriter, r *http.Request) {
 	chirpID := r.PathValue("chirpID")
 	id, err := uuid.Parse(chirpID)
 	if err != nil {
-		utils.RespondWithError(w, http.StatusNotFound, "404: Not Found")
+		utils.RespondWithError(w, http.StatusNotFound, "404: Chirp not Found")
 		return
 	}
 	c, err := cfg.DbQueries.GetChirp(
@@ -23,10 +23,10 @@ func (cfg *ApiConfig) HandlerGetChirp(w http.ResponseWriter, r *http.Request) {
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			utils.RespondWithError(w, http.StatusNotFound, "404: Not Found")
+			utils.RespondWithError(w, http.StatusNotFound, "404: Chirp not Found")
 			return
 		}
-		utils.RespondWithError(w, http.StatusInternalServerError, "Error getting request from database")
+		utils.RespondWithError(w, http.StatusInternalServerError, "500: error getting request from database")
 		return
 	}
 	utils.RespondWithJSON(
