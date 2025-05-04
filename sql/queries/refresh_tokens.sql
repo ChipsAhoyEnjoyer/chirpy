@@ -10,7 +10,7 @@ VALUES (
 RETURNING *;
 
 -- name: GetUserFromRefreshToken :one
-SELECT user_id FROM refresh_tokens
+SELECT * FROM refresh_tokens
 WHERE token = $1;
 
 -- name: UpdateRefreshTokenRevoked :one

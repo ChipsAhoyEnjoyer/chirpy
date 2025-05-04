@@ -19,7 +19,7 @@ func (cfg *ApiConfig) HandlerRefreshJWT(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	userID, err := cfg.DbQueries.GetUserFromRefreshToken(r.Context(), refreshToken)
+	user, err := cfg.DbQueries.GetUserFromRefreshToken(r.Context(), refreshToken)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			utils.RespondWithError(w, http.StatusUnauthorized, "401: Unauthorized")
@@ -30,13 +30,18 @@ func (cfg *ApiConfig) HandlerRefreshJWT(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Check if refresh token is expired or revoked
+	if time.Now().UTC().After(user.ExpiresAt) || (user.RevokedAt.Valid) {
+		utils.RespondWithError(w, http.StatusUnauthorized, "401: Token expired or revoked")
+		return
+	}
 	newJWT, err := auth.MakeJWT(
-		userID,
+		user.UserID,
 		cfg.JWTSecret,
 		time.Hour,
 	)
 	if err != nil {
-		log.Printf("Error creating new JWT for user '%v': %v\n", userID, err)
+		log.Printf("Error creating new JWT for user '%v': %v\n", user.UserID, err)
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error creating new Refresh Token")
 		return
 	}
