@@ -29,3 +29,12 @@ type User struct {
 	Token        string    `json:"token,omitempty"`
 	RefreshToken string    `json:"refresh_token,omitempty"`
 }
+
+type RefreshToken struct {
+	Token     string    `json:"token,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	ExpiresAt time.Time `json:"expires_at,omitempty"`
+	RevokedAt time.Time `json:"revoked_at,omitempty"`
+	UserID    uuid.UUID `json:"user_id,omitempty"`
+}

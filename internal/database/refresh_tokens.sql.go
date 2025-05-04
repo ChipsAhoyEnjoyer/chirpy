@@ -68,17 +68,18 @@ func (q *Queries) GetUserFromRefreshToken(ctx context.Context, token string) (uu
 const updateRefreshTokenRevoked = `-- name: UpdateRefreshTokenRevoked :one
 UPDATE refresh_tokens
 SET updated_at = $1, revoked_at = $2
-WHERE id = $1
+WHERE token = $3
 RETURNING token, created_at, updated_at, expires_at, revoked_at, user_id
 `
 
 type UpdateRefreshTokenRevokedParams struct {
 	UpdatedAt time.Time
 	RevokedAt sql.NullTime
+	Token     string
 }
 
 func (q *Queries) UpdateRefreshTokenRevoked(ctx context.Context, arg UpdateRefreshTokenRevokedParams) (RefreshToken, error) {
-	row := q.db.QueryRowContext(ctx, updateRefreshTokenRevoked, arg.UpdatedAt, arg.RevokedAt)
+	row := q.db.QueryRowContext(ctx, updateRefreshTokenRevoked, arg.UpdatedAt, arg.RevokedAt, arg.Token)
 	var i RefreshToken
 	err := row.Scan(
 		&i.Token,

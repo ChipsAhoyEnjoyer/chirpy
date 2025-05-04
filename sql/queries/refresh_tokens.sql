@@ -16,5 +16,5 @@ WHERE token = $1;
 -- name: UpdateRefreshTokenRevoked :one
 UPDATE refresh_tokens
 SET updated_at = $1, revoked_at = $2
-WHERE id = $1
+WHERE token = $3
 RETURNING *;
