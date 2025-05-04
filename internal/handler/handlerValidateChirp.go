@@ -52,7 +52,7 @@ func (cfg *ApiConfig) HandlerValidateChirp(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		log.Printf("Error posting chirp by '%v' to database: %v", c.UserID, err)
 		log.Printf("chirp body: \n\n%v\n", c.Body)
-		utils.RespondWithError(w, http.StatusInternalServerError, "Error posting chirp: "+err.Error())
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error posting chirp")
 		return
 	}
 

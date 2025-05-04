@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/ChipsAhoyEnjoyer/chirpy/internal/utils"
@@ -13,7 +14,7 @@ func (cfg *ApiConfig) HandlerGetChirp(w http.ResponseWriter, r *http.Request) {
 	chirpID := r.PathValue("chirpID")
 	id, err := uuid.Parse(chirpID)
 	if err != nil {
-		utils.RespondWithError(w, http.StatusNotFound, "Chirp not found")
+		utils.RespondWithError(w, http.StatusNotFound, "404: Not Found")
 		return
 	}
 	c, err := cfg.DbQueries.GetChirp(
@@ -21,7 +22,11 @@ func (cfg *ApiConfig) HandlerGetChirp(w http.ResponseWriter, r *http.Request) {
 		id,
 	)
 	if err != nil {
-		utils.RespondWithError(w, http.StatusInternalServerError, "Error getting request from database: "+err.Error())
+		if err == sql.ErrNoRows {
+			utils.RespondWithError(w, http.StatusNotFound, "404: Not Found")
+			return
+		}
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error getting request from database")
 		return
 	}
 	utils.RespondWithJSON(
