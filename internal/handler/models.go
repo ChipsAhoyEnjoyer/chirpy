@@ -22,9 +22,10 @@ type Chirp struct {
 }
 
 type User struct {
-	ID        uuid.UUID `json:"id,omitempty"`
-	CreatedAt time.Time `json:"created_at,omitzero"`
-	UpdatedAt time.Time `json:"updated_at,omitzero"`
-	Email     string    `json:"email,omitempty"`
-	Token     string    `json:"token,omitempty"`
+	ID           uuid.UUID `json:"id,omitempty"`
+	CreatedAt    time.Time `json:"created_at,omitzero"`
+	UpdatedAt    time.Time `json:"updated_at,omitzero"`
+	Email        string    `json:"email,omitempty"`
+	Token        string    `json:"token,omitempty"`
+	RefreshToken string    `json:"refresh_token,omitempty"`
 }
