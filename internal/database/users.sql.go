@@ -102,7 +102,7 @@ func (q *Queries) UpdateUserCredentials(ctx context.Context, arg UpdateUserCrede
 
 const updateUserToChirpyRed = `-- name: UpdateUserToChirpyRed :one
 UPDATE users
-set is_chirp_red = true
+set is_chirpy_red = true
 WHERE id = $1
 RETURNING id, created_at, updated_at, email, is_chirpy_red
 `

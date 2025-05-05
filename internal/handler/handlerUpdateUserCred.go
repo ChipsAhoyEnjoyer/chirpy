@@ -53,10 +53,11 @@ func (cfg *ApiConfig) HandlerUpdateUserCred(w http.ResponseWriter, r *http.Reque
 		w,
 		http.StatusOK,
 		User{
-			ID:        row.ID,
-			UpdatedAt: row.UpdatedAt,
-			CreatedAt: row.CreatedAt,
-			Email:     row.Email,
+			ID:          row.ID,
+			UpdatedAt:   row.UpdatedAt,
+			CreatedAt:   row.CreatedAt,
+			Email:       row.Email,
+			IsChirpyRed: row.IsChirpyRed,
 		},
 	)
 }

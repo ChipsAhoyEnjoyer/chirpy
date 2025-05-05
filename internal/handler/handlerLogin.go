@@ -74,6 +74,7 @@ func (cfg *ApiConfig) HandlerLogin(w http.ResponseWriter, r *http.Request) {
 		Email:        u.Email,
 		Token:        tk,
 		RefreshToken: refreshTk,
+		IsChirpyRed:  u.IsChirpyRed,
 	}
 	utils.RespondWithJSON(w, http.StatusOK, resp)
 }
